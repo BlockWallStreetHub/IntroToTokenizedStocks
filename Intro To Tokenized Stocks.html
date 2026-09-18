@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tokenized Stocks: The Liquidity Layer | Block Wall Street</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#05070f; --navy-900:#0a0e1a; --navy-800:#0f1526; --navy-700:#161d35; --navy-600:#202a47;
+    --gold-400:#f2c85b; --gold-500:#e0ad2e; --gold-600:#c2911c;
+    --text-primary:#f4f1e8; --text-secondary:#b7bdd1; --text-muted:#7d84a0;
+    --green:#4ade80; --red:#f87171; --border:rgba(242,200,91,0.16);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:radial-gradient(ellipse at top, var(--navy-800) 0%, var(--navy-950) 60%); color:var(--text-primary); font-family:'Barlow', sans-serif; line-height:1.65; padding-bottom:80px;}
+  h1,h2,h3,h4{font-family:'Bebas Neue', sans-serif; letter-spacing:0.03em; color:var(--gold-400); font-weight:400;}
+  .mono{font-family:'DM Mono', monospace;}
+  a{color:var(--gold-400);}
+
+  .topnav{position:sticky; top:0; z-index:50; background:rgba(10,14,26,0.94); backdrop-filter:blur(10px); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  .brand{font-family:'Bebas Neue'; font-size:1.4rem; color:var(--gold-400); letter-spacing:0.05em;}
+  .brand span{color:var(--text-primary);}
+  .navlinks{display:flex; gap:4px; flex-wrap:wrap;}
+  .navlinks a{font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-secondary); text-decoration:none; padding:6px 10px; border-radius:20px; border:1px solid transparent; transition:all .2s;}
+  .navlinks a:hover, .navlinks a.active{color:var(--gold-400); border-color:var(--border); background:var(--navy-700);}
+
+  .hero{max-width:960px; margin:0 auto; padding:70px 24px 40px; text-align:center;}
+  .eyebrow{display:inline-block; font-family:'DM Mono'; font-size:0.72rem; letter-spacing:0.15em; color:var(--gold-500); text-transform:uppercase; border:1px solid var(--border); padding:5px 14px; border-radius:20px; margin-bottom:18px;}
+  .hero h1{font-size:clamp(2.4rem, 6vw, 4.2rem); line-height:1.05;}
+  .hero p.lead{color:var(--text-secondary); font-size:1.2rem; max-width:720px; margin:18px auto 0;}
+  .read-time{margin-top:20px; font-family:'DM Mono'; font-size:0.85rem; color:var(--text-muted);}
+
+  section{max-width:960px; margin:0 auto; padding:64px 24px;}
+  section.wide{max-width:1120px;}
+  .section-tag{font-family:'DM Mono'; font-size:0.72rem; color:var(--gold-500); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:8px; display:block;}
+  h2.section-title{font-size:clamp(1.9rem,4vw,2.8rem); margin-bottom:22px;}
+  h3.sub-title{font-size:1.7rem; color:var(--text-primary); font-family:'Barlow'; font-weight:700; margin:34px 0 10px;}
+  p{color:var(--text-secondary); margin-bottom:16px; font-size:1.05rem;}
+  p strong{color:var(--text-primary);}
+  p.lg{font-size:1.15rem; color:var(--text-secondary);}
+
+  .card{background:var(--navy-800); border:1px solid var(--border); border-radius:14px; padding:26px; margin-bottom:16px;}
+  .card h3{color:var(--gold-400); font-size:1.5rem; margin-bottom:10px;}
+  .card h4{color:var(--text-primary); font-family:'Barlow'; font-weight:700; font-size:1.05rem; margin-bottom:6px;}
+  .card p:last-child{margin-bottom:0;}
+
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media(max-width:720px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+  .stat-strip{display:flex; gap:16px; margin:22px 0; flex-wrap:wrap;}
+  .stat-box{flex:1; min-width:160px; background:var(--navy-700); border-radius:12px; padding:20px; text-align:center;}
+  .stat-box .num{font-family:'Bebas Neue'; font-size:2.4rem; color:var(--gold-400); line-height:1;}
+  .stat-box .lbl{font-family:'DM Mono'; font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; margin-top:6px;}
+
+  table{width:100%; border-collapse:collapse; margin:20px 0; font-size:0.95rem;}
+  th,td{padding:12px 14px; text-align:left; border-bottom:1px solid var(--border);}
+  th{font-family:'DM Mono'; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--gold-500);}
+  td{color:var(--text-secondary);}
+  tr td:first-child{color:var(--text-primary); font-weight:600;}
+  .yes{color:var(--green); font-weight:700;}
+  .no{color:var(--red); font-weight:700;}
+  .warn{color:var(--gold-500); font-weight:700;}
+
+  .calc{background:var(--navy-700); border:1px solid var(--border); border-radius:16px; padding:28px;}
+  .calc-row{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:18px;}
+  @media(max-width:600px){.calc-row{grid-template-columns:1fr;}}
+  .field label{display:block; font-family:'DM Mono'; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;}
+  .field .valdisp{color:var(--gold-400); font-family:'DM Mono'; float:right;}
+  input[type=range]{width:100%; accent-color:var(--gold-500); height:6px;}
+  .calc-results{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;}
+  .result-box{background:var(--navy-800); border-radius:12px; padding:18px; text-align:center; border:1px solid var(--border);}
+  .result-box .label{font-family:'DM Mono'; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;}
+  .result-box .value{font-family:'Bebas Neue'; font-size:2rem; color:var(--gold-400); margin-top:4px;}
+  .result-box.highlight{border-color:var(--gold-500); background:linear-gradient(135deg, rgba(242,200,91,0.08), var(--navy-800));}
+  .delta{font-family:'DM Mono'; font-size:0.85rem; color:var(--green); margin-top:6px;}
+
+  .week-bar{display:flex; width:100%; height:44px; border-radius:8px; overflow:hidden; margin:20px 0; border:1px solid var(--border);}
+  .seg{display:flex; align-items:center; justify-content:center; font-family:'DM Mono'; font-size:0.72rem; text-align:center; padding:0 6px;}
+  .seg.trading{background:var(--navy-600); color:var(--text-secondary); width:19.5%;}
+  .seg.closed{background:linear-gradient(135deg, var(--gold-600), var(--gold-400)); color:#1a1400; font-weight:700; width:80.5%;}
+
+  .flywheel{display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin:30px 0; counter-reset:step;}
+  .fw-step{background:var(--navy-800); border:1px solid var(--border); border-radius:14px; padding:20px; width:190px; position:relative; counter-increment:step;}
+  .fw-step::before{content:counter(step); position:absolute; top:-14px; left:16px; background:var(--gold-400); color:#1a1400; font-family:'Bebas Neue'; font-size:1.1rem; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
+  .fw-step h4{font-size:1rem; margin-top:8px;}
+  .fw-step p{font-size:0.85rem; margin-bottom:0;}
+  .fw-arrow{align-self:center; color:var(--gold-500); font-size:1.4rem;}
+  @media(max-width:720px){.fw-arrow{transform:rotate(90deg);}}
+
+  .gloss-item{border-bottom:1px solid var(--border); padding:14px 0;}
+  .gloss-item dt{font-family:'Bebas Neue'; font-size:1.25rem; color:var(--gold-400); letter-spacing:0.02em;}
+  .gloss-item dd{color:var(--text-secondary); margin-top:4px;}
+
+  .plat-card{background:var(--navy-800); border:1px solid var(--border); border-radius:14px; padding:24px; display:flex; flex-direction:column; gap:10px;}
+  .plat-card .tag{align-self:flex-start; font-family:'DM Mono'; font-size:0.68rem; text-transform:uppercase; background:var(--navy-700); color:var(--gold-400); padding:3px 10px; border-radius:12px;}
+  .plat-card ul{padding-left:18px; color:var(--text-secondary); font-size:0.95rem;}
+  .plat-card li{margin-bottom:6px;}
+
+  .risk-box{background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.35); border-radius:14px; padding:24px; margin-bottom:14px;}
+  .risk-box h3{color:var(--red); font-size:1.3rem; margin-bottom:8px;}
+  .risk-box p{margin-bottom:0;}
+
+  .quiz-q{background:var(--navy-800); border:1px solid var(--border); border-radius:14px; padding:22px; margin-bottom:16px;}
+  .quiz-q p.qtext{color:var(--text-primary); font-weight:600; margin-bottom:14px;}
+  .quiz-opts{display:flex; flex-direction:column; gap:8px;}
+  .quiz-opt{background:var(--navy-700); border:1px solid var(--border); color:var(--text-secondary); padding:10px 14px; border-radius:8px; cursor:pointer; text-align:left; font-family:'Barlow'; font-size:0.95rem; transition:all .15s;}
+  .quiz-opt:hover{border-color:var(--gold-500);}
+  .quiz-opt.correct{background:rgba(74,222,128,0.15); border-color:var(--green); color:var(--text-primary);}
+  .quiz-opt.wrong{background:rgba(248,113,113,0.15); border-color:var(--red); color:var(--text-primary);}
+  .quiz-explain{display:none; margin-top:12px; color:var(--text-muted); font-size:0.88rem; border-top:1px solid var(--border); padding-top:10px;}
+  .quiz-score{text-align:center; padding:20px; font-family:'Bebas Neue'; font-size:1.6rem; color:var(--gold-400);}
+
+  .worked-table td:first-child{color:var(--gold-400);}
+  .toc{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:24px;}
+  .toc a{display:block; background:var(--navy-800); border:1px solid var(--border); border-radius:10px; padding:14px 18px; color:var(--text-secondary); text-decoration:none; font-size:0.95rem;}
+  .toc a:hover{border-color:var(--gold-500); color:var(--text-primary);}
+  .toc a b{color:var(--gold-400); font-family:'DM Mono'; margin-right:8px;}
+  @media(max-width:600px){.toc{grid-template-columns:1fr;}}
+
+  .cta-footer{text-align:center; padding:60px 24px; border-top:1px solid var(--border); margin-top:20px;}
+  footer.disclaimer{max-width:960px; margin:0 auto; padding:30px 24px; color:var(--text-muted); font-size:0.8rem; text-align:center;}
+  .badge-row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:24px;}
+  .badge{font-family:'DM Mono'; font-size:0.75rem; color:var(--text-secondary); border:1px solid var(--border); padding:6px 14px; border-radius:20px;}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="brand">BWS <span>| Tokenized Stocks Module</span></div>
+  <div class="navlinks">
+    <a href="#origins">Origins</a>
+    <a href="#regulation">Global Access</a>
+    <a href="#elite">Why LP</a>
+    <a href="#calculator">Calculator</a>
+    <a href="#weekend">Weekends</a>
+    <a href="#collateral">Collateral</a>
+    <a href="#flywheel">Flywheel</a>
+    <a href="#risks">Risks</a>
+    <a href="#glossary">Glossary</a>
+    <a href="#quiz">Quiz</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <span class="eyebrow">Block Wall Street &middot; Tokenized Stocks Series</span>
+  <h1>THE LIQUIDITY LAYER</h1>
+  <p class="lead">Owning a tokenized stock is just the entry ticket. The real edge comes from what you do with it next — supplying liquidity for fee income, trading around a 24/5 clock the old market can't touch, and borrowing against your position without ever selling it.</p>
+  <p class="read-time">~35–40 min read &middot; Beginner to professional &middot; Updated with the Sept 17, 2026 SEC Innovation Exemption</p>
+  <div class="toc">
+    <a href="#origins"><b>01</b>How We Got Here</a>
+    <a href="#regulation"><b>02</b>The Access Map Keeps Expanding</a>
+    <a href="#elite"><b>03</b>Why Liquidity Beats Holding</a>
+    <a href="#calculator"><b>04</b>Model It Yourself</a>
+    <a href="#weekend"><b>05</b>The Weekend Edge</a>
+    <a href="#collateral"><b>06</b>Borrowing Without Selling</a>
+    <a href="#flywheel"><b>07</b>The Flywheel</a>
+    <a href="#risks"><b>08</b>Risk, In Full</a>
+    <a href="#glossary"><b>09</b>Glossary &amp; Quiz</a>
+  </div>
+</header>
+
+<!-- ORIGINS -->
+<section id="origins">
+  <span class="section-tag">Module 1</span>
+  <h2 class="section-title">How We Got Here</h2>
+  <p class="lg">Tokenized equities didn't start on Robinhood Chain, and understanding the path here matters — it tells you why the current moment is different from the last two waves, and why liquidity is concentrating where it is right now instead of somewhere else.</p>
+
+  <h3 class="sub-title">Era One: Ondo Finance Sets The Standard</h3>
+  <p>For a long stretch, if you wanted credibly-backed tokenized stock exposure, Ondo Stocks (originally launched as Ondo Global Markets) was the default answer. It became the reference point for what a "real" tokenized stock should look like, because every token is fully backed by actual shares and ETFs held with U.S. broker-dealers or U.S.-chartered trust companies — not a synthetic promise with nothing behind it.</p>
+  <p>Its signature innovation is what Ondo calls <strong>just-in-time liquidity</strong>. Instead of relying on a thin, pre-funded pool of tokens (the model many early competitors used, where a big trade could move the price sharply against you), Ondo's minting and redemption process taps directly into real Nasdaq and NYSE liquidity at the moment of the trade. The effect on execution cost was dramatic: some competing platforms showed roughly 200 basis points of price impact on a $200,000 tokenized SPY trade at launch. Ondo Stocks reduced that to around 2 basis points — a hundredfold improvement — by connecting straight to liquidity that already existed rather than trying to bootstrap a new pool from scratch.</p>
+  <p>On top of the execution model, Ondo built in institutional-grade protections that most early tokenized-stock platforms skipped: an independent third-party <strong>Verification Agent</strong> reviews the asset backing and publishes a report every business day, and an independent <strong>Security Agent</strong> holds a first-priority, perfected security interest in the underlying assets for the benefit of tokenholders — meaning if something goes wrong, there's a legal structure empowering that agent to foreclose on the collateral and distribute proceeds back to holders. Dividends are automatically reinvested into the token's value (net of applicable withholding tax), so holders don't need to claim anything separately, and tokens are designed as total-return trackers of the underlying security.</p>
+  <div class="stat-strip">
+    <div class="stat-box"><div class="num">$1B+</div><div class="lbl">TVL in Ondo Stocks</div></div>
+    <div class="stat-box"><div class="num">3</div><div class="lbl">Chains: ETH, BNB, Solana</div></div>
+    <div class="stat-box"><div class="num">~2bps</div><div class="lbl">Typical execution slippage</div></div>
+    <div class="stat-box"><div class="num">"on"</div><div class="lbl">Ticker suffix, e.g. TSLAon</div></div>
+  </div>
+
+  <h3 class="sub-title">Era Two: The Solana Wave</h3>
+  <p>As Solana's DeFi ecosystem matured through faster block times and deeper on-chain liquidity, tokenized equities followed. <strong>xStocks</strong> brought public-company tokens onto Solana rails, giving Solana-native traders direct exposure to companies like Apple, Tesla, and Nvidia without ever leaving the ecosystem they already used for everything else.</p>
+  <p><strong>PreStocks</strong> pushed the frontier even further. Rather than tokenizing public stocks, it tokenizes exposure to <em>private</em>, pre-IPO companies — names like OpenAI, Anthropic, and Anduril — through SPV-backed tokens. This is genuinely new access: a retail trader cannot buy shares of OpenAI on a normal brokerage account today at any price, at any size. PreStocks tokens give holders economic exposure only (no ownership, voting, dividend, or information rights, and no guaranteed secondary-market liquidity — this is a materially different risk profile from a fully-backed public-stock token), but the category itself proved something important: tokenized stocks aren't just a wrapper around something that already exists. They can unlock access that has no traditional equivalent at all.</p>
+  <div class="stat-strip">
+    <div class="stat-box"><div class="num">$1.4B+</div><div class="lbl">PreStocks trade volume</div></div>
+    <div class="stat-box"><div class="num">6M+</div><div class="lbl">Transactions</div></div>
+    <div class="stat-box"><div class="num">50K+</div><div class="lbl">Holders</div></div>
+  </div>
+
+  <p>One more issuer belongs in this same wave: in August 2026, <strong>Coinbase</strong> began issuing its own tokenized stocks — Apple, Nvidia, Alphabet, Meta, Tesla, Amazon, Microsoft, and others — on Base, giving holders self-custodied, 1:1-backed exposure they can move straight into DeFi. It's the same underlying idea as xStocks and Robinhood's Stock Tokens, from a different, exchange-native issuer, and it's already producing one of the more interesting collateral stories in this whole module (see Module 6).</p>
+
+  <h3 class="sub-title">Era Three: Robinhood Chain Takes The Spotlight</h3>
+  <p>Robinhood Chain flips the underlying model. Instead of a DeFi protocol bolting stock exposure onto a general-purpose blockchain, this is a chain <em>built specifically</em> around tokenized real-world assets, with Robinhood Stock Tokens as the flagship product. Every Stock Token is a standard ERC-20 contract with 18 decimals, tied to a specific underlying equity or ETF and identified by its ticker. Prices are published on-chain through a live Chainlink data feed, so any smart contract can read the current price directly — no oracle integration work required. Because it's a standard ERC-20 with an oracle already wired in, developers can build lending markets, trading venues, and structured products on top of it with no special SDK — the same tools used for any ERC-20 just work.</p>
+  <p>Stock Tokens are self-custodied and accessible around the clock, but it's worth understanding the actual trading calendar underneath that claim. There are two separate windows to know:</p>
+  <div class="grid2">
+    <div class="card">
+      <h4>The Tokenization Window</h4>
+      <p>Market makers can mint and burn new Stock Tokens Monday 02:00 CET through Saturday 02:00 CET (subject to daylight savings). Outside that window, no new tokens are minted or burned.</p>
+    </div>
+    <div class="card">
+      <h4>On-Chain Buying &amp; Selling</h4>
+      <p>Once tokens exist, end users can buy and sell them on-chain at any time — including outside the tokenization window. This is the part that never stops.</p>
+    </div>
+  </div>
+  <p>Each token also has per-asset trading capabilities that vary by session — regular market hours, extended hours, and overnight — which developers can query through Robinhood's assets API before executing a trade. And because corporate actions like dividends and stock splits still happen to the underlying company, Robinhood Chain manages them through an on-chain multiplier (defined by ERC-8056, the Scaled UI Amount Extension) that adjusts the shares-per-token ratio automatically while your raw token balance stays static — the oracle folds the multiplier into the price it reports, so nothing needs to be manually claimed or reconciled.</p>
+
+  <h3 class="sub-title">Where Each Platform Stands Today</h3>
+  <div class="card">
+    <table>
+      <tr><th>Platform</th><th>Chain(s)</th><th>What it tokenizes</th><th>Who it's for</th></tr>
+      <tr><td>Ondo Stocks</td><td>Ethereum, BNB Chain, Solana</td><td>Public U.S. stocks &amp; ETFs</td><td>Investors worldwide wanting brokerage-grade backing</td></tr>
+      <tr><td>PreStocks</td><td>Solana</td><td>Pre-IPO private companies (SPV-backed)</td><td>Traders wanting exposure before a listing exists</td></tr>
+      <tr><td>xStocks</td><td>Solana</td><td>Public U.S. stocks</td><td>Solana-native DeFi users</td></tr>
+      <tr><td>Robinhood Stock Tokens</td><td>Robinhood Chain</td><td>Public U.S. stocks &amp; ETFs</td><td>Anyone wanting the deepest on-chain liquidity &amp; DeFi composability</td></tr>
+      <tr><td>Coinbase Stock Tokens</td><td>Base</td><td>Public U.S. stocks (AAPLc, NVDAc, GOOGLc, METAc, TSLAc &amp; more)</td><td>Base-native users wanting a self-custody equity position they can immediately lend or borrow against</td></tr>
+    </table>
+    <p style="margin-top:10px; font-size:0.85rem;">Note: this is fundamentally a global access story — someone in Lagos, Manila, or São Paulo can hold the same tokenized Apple or Tesla exposure as someone in London or Singapore, all through the same wallet. Exact access still varies platform by platform and region by region, so it's worth a quick eligibility check wherever you are — see Module 2 for how quickly that map is now shifting.</p>
+  </div>
+</section>
+
+<!-- SEC REGULATORY UPDATE -->
+<section id="regulation">
+  <span class="section-tag">Breaking &middot; September 17, 2026</span>
+  <h2 class="section-title">The Access Map Keeps Expanding</h2>
+  <p class="lg">The whole thread running through this module is access: tokenized stocks have quietly turned a market that used to require a local broker, a funded account, and specific market hours into something anyone with a wallet can reach. Regulators around the world are now racing to build formal on-ramps for that reality instead of leaving it in a gray zone — and the most consequential move yet just landed in the United States.</p>
+
+  <h3 class="sub-title">What Just Happened</h3>
+  <p>On September 17, 2026, the SEC issued Order 34-106402 — the <strong>"Innovation Exemption"</strong> — creating a new category called <strong>Tokenized Securities Venues (TSVs)</strong>. A qualifying venue can now run permissioned automated-market-maker liquidity pools trading tokenized versions of real, listed U.S. stocks — the same National Market System (NMS) stocks that trade on Nasdaq and the NYSE — without registering as a full securities exchange. It's the clearest signal yet that one of the world's largest capital markets is building a formal, sanctioned bridge onto public blockchains rather than treating on-chain equity trading as something to be held at arm's length.</p>
+  <p>This didn't come out of nowhere. It's the next step after a string of moves through 2025 and 2026: a no-action letter letting the DTCC's Depository Trust Company begin tokenizing Russell 1000 stocks, major ETFs, and Treasuries; a joint SEC staff statement on tokenized securities; and rule changes clearing both Nasdaq and the NYSE to support tokenized share trading. It also lands alongside momentum elsewhere — the UK and South Korea both moving on their own tokenized-securities frameworks, and Ondo Stocks already operating under an EU-approved base prospectus that makes many of its tokens available to retail investors across the EEA. Taken together, the pattern is a global one: market infrastructure is being built out faster than any single regulator, and each new framework adds another region to the map rather than replacing the others.</p>
+
+  <div class="stat-strip">
+    <div class="stat-box"><div class="num">5 yrs</div><div class="lbl">Length of the U.S. exemption window</div></div>
+    <div class="stat-box"><div class="num">TSV</div><div class="lbl">New category it creates</div></div>
+    <div class="stat-box"><div class="num">Global</div><div class="lbl">Part of a wider, multi-region trend</div></div>
+  </div>
+
+  <h3 class="sub-title">What The Exemption Actually Requires</h3>
+  <p>It's a real framework with real guardrails, not an open door. A TSV has to be a properly incorporated venue that meets a set of operating standards, and — importantly for investor protection — any tokenized stock traded on one has to precisely mirror the rights of the underlying security, including dividends and voting, where many existing tokenized-stock products (including several covered in this module) currently offer price exposure only. Purely synthetic look-alike products aren't permitted. And it's explicitly temporary: a five-year window the SEC is using to gather real data on how AMM-based securities trading performs before deciding what, if anything, becomes permanent.</p>
+
+  <h3 class="sub-title">Why This Matters For The Global Picture</h3>
+  <p>The platforms covered in Module 1 already built a genuinely global access story without this: Ondo Stocks, PreStocks, and xStocks all serve investors across dozens of countries today. What this adds is depth rather than a replacement — one of the world's largest and most liquid equity markets now has a real, sanctioned path to plug into that same on-chain access layer, rather than sitting outside it. Expect the platforms named throughout this module, and new entrants, to move toward qualifying under frameworks like this one as they roll out region by region. The practical takeaway for anyone evaluating a platform, wherever you're based, is the same: check what's actually available to you today, since this is one of the fastest-moving access maps in finance right now.</p>
+</section>
+
+<!-- WHY LP IS ELITE -->
+<section id="elite">
+  <span class="section-tag">Module 3</span>
+  <h2 class="section-title">Why Supplying Liquidity Beats Just Holding</h2>
+  <p class="lg">Picture two people who both believe Apple stock is going higher over the next year. Same conviction, same asset, same starting capital — but structurally different outcomes.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>The Traditional Holder</h3>
+      <p>Buys AAPL through a brokerage. If the price rises 12% over the year, they made 12%. If Apple pays a small dividend, they pick up a little more. That's the entire toolkit — price appreciation, plus whatever dividend the company decides to issue. The capital just sits there between now and the day they sell. It isn't doing anything else; it's simply exposed to the price.</p>
+    </div>
+    <div class="card">
+      <h3>The Liquidity Provider</h3>
+      <p>Buys tokenized AAPL and pairs it into a liquidity pool (against a stablecoin or another asset). Now that same position is doing two jobs at once: it still carries the price exposure, <strong>and</strong> it earns a cut of every trade that swaps through that pool, 24 hours a day, every day the pool exists. The position that used to just sit there is now actively working — generating income independent of whether the price moves at all in a given hour.</p>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Return Source, Side By Side</h3>
+  <table>
+    <tr><th>Source of return</th><th>Buy &amp; Hold</th><th>Stock LP</th></tr>
+    <tr><td>Price appreciation</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+    <tr><td>Dividends (where applicable)</td><td class="yes">Yes</td><td class="yes">Yes*</td></tr>
+    <tr><td>Trading fee income</td><td class="no">No</td><td class="yes">Yes</td></tr>
+    <tr><td>Earns while markets are closed</td><td class="no">No</td><td class="yes">Yes</td></tr>
+    <tr><td>Usable as loan collateral without selling</td><td class="warn">Limited (margin only)</td><td class="yes">Yes, on-chain</td></tr>
+    <tr><td>Exposure to impermanent loss / price divergence risk</td><td class="no">No</td><td class="warn">Yes — this is the trade-off</td></tr>
+  </table>
+  <p style="font-size:0.85rem;">*Depends on the specific token's structure — some tokenized stocks (like Ondo's) auto-reinvest dividends into the token's value; others simply track price without a dividend mechanism at all.</p>
+
+  <h3 class="sub-title">The Trade-Off You're Accepting</h3>
+  <p>This isn't free money — it's a different risk profile, and it deserves real explanation rather than a footnote. An LP position can experience <strong>impermanent loss</strong>: because a pool automatically rebalances its two assets as their relative prices move, if the paired assets drift apart in price, the combined value of your position can end up lower than if you had simply held the two assets separately instead of pooling them.</p>
+  <div class="grid2">
+    <div class="card">
+      <h4>When impermanent loss bites hardest</h4>
+      <p>Volatile pairs, sharp one-directional price moves, and wide price divergence between the two pooled assets over your holding window. A tokenized stock that suddenly gaps 20% on earnings news while paired against a stablecoin is the textbook case.</p>
+    </div>
+    <div class="card">
+      <h4>When it's minimal</h4>
+      <p>Tighter, well-chosen price ranges, active rebalancing as the price moves, and pairs that tend to move together rather than apart. Blue-chip stock pairs during quiet, range-bound stretches see much smaller drag than volatile or thinly-traded pairs.</p>
+    </div>
+  </div>
+  <p>That's the real cost behind the fee income, and it's why range selection, pool choice, and active position management matter — this is the actual skill in stock-LP investing, not just depositing capital and walking away. Anyone teaching this strategy without covering impermanent loss in real depth isn't giving you the full picture, and you should be skeptical of any pitch that doesn't mention it.</p>
+</section>
+
+<!-- CALCULATOR -->
+<section id="calculator">
+  <span class="section-tag">Module 4 &middot; Interactive</span>
+  <h2 class="section-title">Model It Yourself</h2>
+  <p class="lg">Adjust the assumptions below to see how a simple buy-and-hold position compares to the same capital deployed as a liquidity position over one year. These are illustrative assumptions you control — not a promise of returns, and not a substitute for checking real, current numbers on whatever platform you're evaluating.</p>
+
+  <div class="calc">
+    <div class="calc-row">
+      <div class="field"><label>Capital Deployed <span class="valdisp" id="capVal">$10,000</span></label><input type="range" id="capInput" min="1000" max="100000" step="500" value="10000"></div>
+      <div class="field"><label>Expected Price Appreciation (1yr) <span class="valdisp" id="appVal">15%</span></label><input type="range" id="appInput" min="-20" max="80" step="1" value="15"></div>
+    </div>
+    <div class="calc-row">
+      <div class="field"><label>LP Fee Yield (Annualized) <span class="valdisp" id="feeVal">25%</span></label><input type="range" id="feeInput" min="0" max="150" step="1" value="25"></div>
+      <div class="field"><label>Estimated Impermanent Loss Drag <span class="valdisp" id="ilVal">4%</span></label><input type="range" id="ilInput" min="0" max="30" step="1" value="4"></div>
+    </div>
+    <div class="calc-results">
+      <div class="result-box"><div class="label">Buy &amp; Hold — End Value</div><div class="value" id="holdResult">$0</div></div>
+      <div class="result-box highlight"><div class="label">Stock LP — End Value</div><div class="value" id="lpResult">$0</div><div class="delta" id="deltaResult"></div></div>
+    </div>
+  </div>
+  <p style="font-size:0.85rem; margin-top:14px;">This model is simplified for teaching purposes. Real LP returns depend on pool depth, range width, rebalancing costs, and actual trading volume, all of which change constantly — treat this as a way to build intuition for the mechanism, not a forecasting tool.</p>
+
+  <h3 class="sub-title">How To Read The Two Sliders That Matter Most</h3>
+  <p>The fee yield and impermanent loss sliders are doing the real work here. Push fee yield up and end value climbs — but push impermanent loss drag up alongside it (which tends to happen together, since higher-fee pools are often more volatile pairs) and you'll see how quickly the LP advantage can shrink or even flip negative relative to just holding. Try setting appreciation to a large negative number: notice that a well-chosen LP position can still slightly outperform a straight hold in a falling market, purely because fee income keeps accruing even while price is working against you — though it obviously doesn't protect you from a real crash.</p>
+</section>
+
+<!-- WEEKEND EDGE -->
+<section id="weekend">
+  <span class="section-tag">Module 5</span>
+  <h2 class="section-title">The Weekend Edge</h2>
+  <p class="lg">There are 168 hours in a week. The U.S. stock market is open for roughly 32.5 of them — 6.5 trading hours a day, five days a week. Everything else — nights, weekends, holidays — the traditional market is simply closed. Tokenized stock pools don't close.</p>
+
+  <div class="week-bar">
+    <div class="seg trading">32.5 hrs open</div>
+    <div class="seg closed">135.5 hrs closed to TradFi — on-chain pools still trading</div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat-box"><div class="num">39%</div><div class="lbl">Of every week is dead time for a brokerage account</div></div>
+    <div class="stat-box"><div class="num">65.5</div><div class="lbl">Hours from Friday close to Monday open alone</div></div>
+    <div class="stat-box"><div class="num">0</div><div class="lbl">Hours a tokenized pool is forced to sit idle</div></div>
+  </div>
+
+  <h3 class="sub-title">What This Means Practically</h3>
+  <p>A tokenized AAPL or NVDA pool can still be earning trading fees on Friday night, all weekend, and Monday morning before the opening bell — hours when a traditional brokerage account earns nothing beyond a static, unmoving price. Traders positioning in tokenized blue-chip pools ahead of a quiet weekend are specifically capturing that dead time, and doing it repeatedly, week after week, compounds into a real structural advantage over a buy-and-hold account that simply idles through the same hours.</p>
+  <p>In practice, this often means going a little tighter on your price range heading into a weekend (since the underlying isn't expected to move much while the exchange is closed) to maximize the share of fees you capture relative to other liquidity in the pool, then widening the range again once regular trading hours resume and volatility picks back up.</p>
+
+  <h3 class="sub-title">The Other Side Of It</h3>
+  <p>Because the underlying stock isn't trading, price discovery over the weekend can be thinner and gaps can be more pronounced once TradFi markets reopen Monday. A position sized and ranged for a quiet weekend can be caught off guard by a Monday gap up or down — especially around earnings releases, major news, or macro events that land after Friday's close and get fully priced in only once the real exchange reopens. Range and position size should reflect that added uncertainty, not just the fee opportunity in isolation. The tighter you go for weekend fee capture, the faster a real Monday gap can push your position outside that range entirely.</p>
+</section>
+
+<!-- COLLATERAL -->
+<section id="collateral" class="wide">
+  <span class="section-tag">Module 6</span>
+  <h2 class="section-title">Turning Stock Tokens Into Liquid Capital</h2>
+  <p class="lg">The other half of this strategy has nothing to do with trading fees at all — it's about <strong>not having to sell</strong> when you need cash. On-chain lending markets now accept tokenized stocks as collateral, letting you borrow stablecoins against a position you still fully own and still benefit from if it appreciates.</p>
+
+  <h3 class="sub-title">Why This Beats Traditional Margin</h3>
+  <p>In traditional finance, unlocking cash from a stock position usually means either selling — triggering a taxable event where applicable and giving up all future upside on what you sold — or opening a margin loan through your broker, which comes with an application process, credit-based underwriting, and is often unavailable to most retail accounts at meaningful scale. On-chain, borrowing against a tokenized stock position is permissionless, transparent, and available to anyone holding the token: no application, no credit check, just collateral and a loan-to-value ratio enforced automatically by a smart contract.</p>
+  <table>
+    <tr><th></th><th>TradFi Margin Loan</th><th>On-Chain Collateralized Loan</th></tr>
+    <tr><td>Access</td><td>Application, account minimums, broker approval</td><td>Permissionless — anyone holding the token</td></tr>
+    <tr><td>Underwriting</td><td>Credit check, broker discretion</td><td>Collateral and loan-to-value ratio only</td></tr>
+    <tr><td>Transparency</td><td>Opaque terms, broker discretion</td><td>Fully on-chain, auditable terms</td></tr>
+    <tr><td>Liquidation mechanism</td><td>Broker's margin desk</td><td>Automated smart contract</td></tr>
+  </table>
+  <div class="risk-box">
+    <h3>The catch, stated plainly</h3>
+    <p>These are still collateralized loans. If the stock token's price falls far enough, the position can be automatically liquidated to repay the loan — the same mechanical risk as any margin position, just enforced by code instead of a broker's margin desk. Automation makes it faster and more predictable, not risk-free.</p>
+  </div>
+
+  <h3 class="sub-title">Platform Spotlight: Ripe Finance</h3>
+  <div class="plat-card">
+    <span class="tag">Robinhood Chain</span>
+    <p>Ripe is a multi-collateral borrowing protocol, originally deployed on Base and since extended to Robinhood Chain, where it directly accepts Robinhood Stock Tokens as collateral. Its core design choice is what separates it from older lending protocols like Aave or Compound: instead of one isolated vault per asset, Ripe lets you deposit your entire portfolio — crypto, yield-bearing positions, and tokenized stocks — into a single combined position, and borrow one stablecoin, GREEN, against the whole thing at weighted terms based on each asset's individual risk.</p>
+    <h4 style="margin-top:14px;">How The Loan Actually Works</h4>
+    <p style="margin-bottom:10px;">GREEN targets a $1 peg and is burned whenever a loan is repaid, keeping supply tied to outstanding debt. A yield-bearing variant, sGREEN, auto-compounds protocol revenue for holders who'd rather stay passive rather than actively manage a loan. When you borrow, you're not selling or locking away your stock token's price exposure — it keeps moving with the market exactly as if you'd never touched it. If the combined value of your collateral falls far enough relative to what you've borrowed, the position becomes eligible for liquidation, where a liquidator repays part of your debt in exchange for seizing collateral at a discount — the same over-collateralization safety model used by established protocols like MakerDAO, just applied here to a basket that includes tokenized equities.</p>
+    <table style="margin:14px 0;">
+      <tr><th>Term</th><th>Detail</th></tr>
+      <tr><td>Accepted collateral</td><td>WETH plus Robinhood Stock Tokens: NVDA, AAPL, TSLA, SPCX, GOOGL, GME</td></tr>
+      <tr><td>Loan-to-value</td><td>Flat 70% on accepted stock tokens</td></tr>
+      <tr><td>Borrow rate</td><td>7% on GREEN borrowed</td></tr>
+      <tr><td>Origination fee</td><td>~0.25% on new loans, then ongoing interest</td></tr>
+      <tr><td>Borrowed asset</td><td>GREEN ($1-pegged stablecoin, burned on repayment)</td></tr>
+      <tr><td>Passive option</td><td>sGREEN — auto-compounds protocol revenue</td></tr>
+    </table>
+    <p style="margin-top:8px; font-size:0.9rem;">Worked example: deposit $10,000 of tokenized NVDA at 70% LTV, and you can borrow up to roughly $7,000 in GREEN — while your original $10,000 of NVDA exposure keeps moving with the market exactly as if you'd never touched it.</p>
+    <div class="risk-box" style="margin-top:14px;">
+      <h3 style="font-size:1.1rem;">Worth Knowing Before You Deposit</h3>
+      <p>Ripe is genuinely early-stage. Public on-chain trackers have shown its total value locked in the low single-digit millions or less — a fraction of established lending markets like Aave or Kamino. That's not disqualifying (every protocol starts small), but it does mean thinner liquidity, less battle-testing, and more sensitivity to a single large position than a deeply established market. Ripe also distributes a governance token, RIPE, through protocol vaults and community liquidity-mining farms — those farm APYs are typically driven by token emissions rather than real protocol revenue, and locked RIPE positions can carry a steep penalty (reported as high as 80%) for exiting early. Treat governance-token farming as a separate, higher-risk activity from the core collateralized-borrowing use case covered above.</p>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Platform Spotlight: Kamino</h3>
+  <div class="plat-card">
+    <span class="tag">Solana</span>
+    <p>Kamino Lend is the largest lending protocol on Solana, and in July 2025 it became the first major DeFi lending protocol anywhere to accept tokenized stocks as collateral — a genuine industry first, not just a feature update. It did this by building a dedicated xStocks Market on its v2 architecture, purpose-built to handle collateral that behaves differently from crypto: assets with real-world trading-hours schedules and equity-style volatility patterns.</p>
+    <h4 style="margin-top:14px;">Why The Architecture Matters</h4>
+    <p style="margin-bottom:10px;">Kamino's xStocks Market runs as an <strong>isolated market</strong>, meaning risk from tokenized-stock collateral is walled off from Kamino's core crypto lending pools — a blowup or sharp depeg in one tokenized stock can't cascade into the rest of the protocol's $1B+ in overall deposits. Pricing runs through Chainlink Data Streams, a sub-second price feed built specifically for the xStocks integration, addressing the core structural challenge of lending against equities: the underlying stock market closes on weekends and holidays, but the DeFi protocol never does.</p>
+    <table style="margin:14px 0;">
+      <tr><th>Metric</th><th>Detail</th></tr>
+      <tr><td>First mover</td><td>First major DeFi lender to accept tokenized stocks as collateral, July 2025</td></tr>
+      <tr><td>Collateral accepted</td><td>xStocks (60+ names, e.g. AAPLx, TSLAx, NVDAx) plus Superstate tokenized equities (e.g. FWDI)</td></tr>
+      <tr><td>Price feed</td><td>Chainlink Data Streams, sub-second updates</td></tr>
+      <tr><td>Market structure</td><td>Isolated xStocks Market, separate from core lending pools</td></tr>
+      <tr><td>Venue share</td><td>~82.6% of all Solana tokenized-stock lending TVL</td></tr>
+    </table>
+    <p>That last figure is worth sitting with: as tokenized-stock lending on Solana grew from roughly $23 million to $53 million in TVL over a few weeks in mid-2026, Kamino held onto more than four-fifths of that entire market the whole way — a strong signal of first-mover advantage translating into a durable liquidity moat, though the category as a whole is still small relative to Kamino's total book.</p>
+    <ul>
+      <li>Deep, established lending infrastructure — not a brand-new experiment like some competitors in this space</li>
+      <li>Works alongside the broader Solana tokenized-stock ecosystem, including xStocks and Superstate</li>
+      <li>Borrowed capital can be redeployed directly into a new LP position — this is exactly where the flywheel in the next module closes the loop</li>
+    </ul>
+  </div>
+
+  <h3 class="sub-title">Platform Spotlight: Morpho — Coinbase Stock Tokens</h3>
+  <div class="plat-card">
+    <span class="tag">Base</span>
+    <p>The newest entry in this module, and it's moving fast. Coinbase began issuing its own tokenized stocks in August 2026 — self-custodied, 1:1-backed tokens like AAPLc, NVDAc, GOOGLc, METAc, and SPCXc — and on September 7, 2026, the lending protocol Morpho opened live borrowing markets against five of them on Base. It's the same collateralized-borrowing idea as Ripe and Kamino, from a third major venue, and the activity so far shows just how quickly a brand-new market can go from empty to genuinely used.</p>
+    <h4 style="margin-top:14px;">How These Markets Are Built</h4>
+    <p style="margin-bottom:10px;">Each market is independently curated — in this case, all five by Steakhouse Financial, whose USDC vaults supply the large majority of the lendable dollars. Chainlink price feeds value the underlying stock tokens for collateral calculations and liquidations, and borrowers can draw USDC either through Morpho's standard variable-rate markets or its "Midnight" fixed-rate layer, which lists a full ladder of maturities out to March 2027 for each token — though as of this writing, all real borrowing activity sits in the variable-rate side; the fixed-rate markets exist but haven't seen use yet.</p>
+    <table style="margin:14px 0;">
+      <tr><th>Term</th><th>Detail</th></tr>
+      <tr><td>Live markets</td><td>AAPLc, GOOGLc, NVDAc, METAc, SPCXc (5 of Coinbase's 10 listed stock tokens)</td></tr>
+      <tr><td>Launched</td><td>September 7, 2026</td></tr>
+      <tr><td>Liquidation LTV</td><td>62.5% on AAPL/NVDA/META/SPCX; 77% on GOOGL</td></tr>
+      <tr><td>Curator</td><td>Steakhouse Financial (all five markets)</td></tr>
+      <tr><td>Borrow asset</td><td>USDC, variable or fixed-rate (Midnight layer)</td></tr>
+      <tr><td>Price feed</td><td>Chainlink</td></tr>
+    </table>
+    <p>The early numbers tell a real adoption story: total borrowing sat under $600 through most of the first week, then jumped from $503 to roughly $42,000 in about two hours on September 16 as word spread, and has continued climbing to around $55,000 in borrowed USDC against just over $104,000 in pledged stock-token collateral. Utilization is already running hot in a couple of these markets — Apple, Alphabet, and Nvidia are sitting near 90% utilized at a 5.62% borrow rate, while Meta has pushed past 97% utilization with borrow costs spiking to roughly 17.5%. That's a useful live example of how rates respond to demand in these markets: the tighter the available liquidity gets, the more expensive it becomes to borrow, in real time.</p>
+    <div class="risk-box" style="margin-top:14px;">
+      <h3 style="font-size:1.1rem;">Worth Knowing</h3>
+      <p>Access to Coinbase's stock tokens themselves is currently limited to eligible investors outside a handful of restricted regions, and that eligibility is enforced at the token and issuer level rather than by Morpho's own market contracts — so whether you can actually acquire the underlying token to deposit as collateral is a separate question from whether the Morpho market exists. Five of Coinbase's ten listed stock tokens (Amazon, Microsoft, Strategy, SanDisk, and Tesla) don't have a Morpho market yet at all — check the live app for the current list rather than assuming a name from Module 1's roster is automatically borrowable here.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FLYWHEEL -->
+<section id="flywheel" class="wide">
+  <span class="section-tag">Module 7</span>
+  <h2 class="section-title">The Flywheel</h2>
+  <p class="lg">Put every piece together and you get a loop that compounds in a way a plain brokerage account structurally can't — because price appreciation, fee income, and liquidity access are all stacked on the same capital at once, and every layer feeds the next one.</p>
+
+  <div class="flywheel">
+    <div class="fw-step"><h4>Buy the stock token</h4><p>Gain price exposure to a company you believe in — 24/7, self-custodied.</p></div>
+    <div class="fw-arrow">&rarr;</div>
+    <div class="fw-step"><h4>Supply it as liquidity</h4><p>Earn ongoing fee income on top of price appreciation — including through nights and weekends.</p></div>
+    <div class="fw-arrow">&rarr;</div>
+    <div class="fw-step"><h4>Compound the fees</h4><p>Reinvest earned fees back into the same or new stock positions instead of cashing out.</p></div>
+    <div class="fw-arrow">&rarr;</div>
+    <div class="fw-step"><h4>Borrow against the stack</h4><p>Use Ripe or Kamino to unlock liquid capital without selling a single token.</p></div>
+    <div class="fw-arrow">&rarr;</div>
+    <div class="fw-step"><h4>Redeploy the capital</h4><p>Open new positions, cover expenses, or DCA into more blue chips — the stack keeps growing underneath you.</p></div>
+  </div>
+
+  <h3 class="sub-title">A Worked, Illustrative Example</h3>
+  <p style="font-size:0.85rem; color:var(--text-muted);">Hypothetical numbers to show the mechanism, not a projection or a promise of returns — pull real, current fee APRs, LTVs, and borrow rates before acting on any of this.</p>
+  <table class="worked-table">
+    <tr><th>Step</th><th>Action</th><th>Position</th></tr>
+    <tr><td>1</td><td>Buy tokenized NVDA</td><td>$10,000</td></tr>
+    <tr><td>2</td><td>Supply as liquidity at an illustrative fee APR</td><td>+$1,500 / yr</td></tr>
+    <tr><td>3</td><td>Compound fees back into the position</td><td>$11,500 base</td></tr>
+    <tr><td>4</td><td>Borrow against the stack at 70% LTV</td><td>~$8,050 GREEN</td></tr>
+    <tr><td>5</td><td>Redeploy borrowed capital into a second position</td><td>New LP opened</td></tr>
+  </table>
+  <p>Notice what didn't happen anywhere in that sequence: the original $10,000 of NVDA exposure never left the position. Every dollar borrowed in step 4 is <strong>additional</strong> capital working alongside it, not a replacement for it. That's the structural difference between generational wealth-building and simply "owning some stock." A traditional shareholder has one lever — hope the price goes up. Someone running this full loop has price appreciation, fee income, and liquidity access all stacked on the same capital at once, compounding into each other round after round.</p>
+</section>
+
+<!-- RISKS -->
+<section id="risks">
+  <span class="section-tag">Module 8</span>
+  <h2 class="section-title">Risk, In Full</h2>
+  <p class="lg">Every advantage covered above comes with a corresponding risk. None of this is a reason to avoid the strategy — it's the information you need to size positions and manage them responsibly.</p>
+  <div class="risk-box">
+    <h3>Impermanent Loss</h3>
+    <p>Pooled assets can drift apart in price, leaving your combined LP position lagging what simple holding would have returned. Covered in depth in Module 2 — this is the core trade-off behind every fee dollar earned.</p>
+  </div>
+  <div class="risk-box">
+    <h3>Smart Contract Risk</h3>
+    <p>Every protocol named in this module — Ondo, xStocks, PreStocks, Robinhood Chain's Stock Tokens, Coinbase's stock tokens, Ripe, Kamino, Morpho — is ultimately code. Bugs and exploits are a real, if uncommon, possibility on any DeFi protocol, no matter how established.</p>
+  </div>
+  <div class="risk-box">
+    <h3>Liquidation Risk</h3>
+    <p>Borrow against collateral and a sharp enough drawdown in the underlying stock token's price can trigger automated liquidation of your position — same mechanical risk as TradFi margin, enforced by a smart contract instead of a broker.</p>
+  </div>
+  <div class="risk-box">
+    <h3>De-Peg / Issuer Risk</h3>
+    <p>A tokenized stock is only as sound as the entity backing it and the collateral held behind it. Verification and security-agent structures (like Ondo's) reduce this risk but don't eliminate it entirely.</p>
+  </div>
+  <div class="risk-box">
+    <h3>Regional Access Risk</h3>
+    <p>Access rules differ by platform and by region, and they're evolving quickly right now — always verify what's actually available where you are before assuming access. New frameworks like the SEC's Innovation Exemption (Module 2) are also explicitly temporary experiments rather than permanent guarantees, so a venue's current access status is worth checking directly rather than assuming it holds indefinitely.</p>
+  </div>
+  <div class="risk-box">
+    <h3>Weekend Gap Risk</h3>
+    <p>Thinner weekend price discovery can mean sharper, less predictable moves once traditional markets reopen — covered in depth in Module 4.</p>
+  </div>
+  <p style="font-size:0.85rem;">Educational content only — not financial, investment, tax, or legal advice. Do your own research before deploying capital.</p>
+</section>
+
+<!-- GLOSSARY -->
+<section id="glossary">
+  <span class="section-tag">Reference</span>
+  <h2 class="section-title">Glossary</h2>
+  <dl>
+    <div class="gloss-item"><dt>Tokenized Stock</dt><dd>An on-chain token designed to track the economic value of a real, publicly (or privately) held company's shares — price movement and often dividends — without granting the legal ownership rights a real share carries.</dd></div>
+    <div class="gloss-item"><dt>Liquidity Provider (LP)</dt><dd>Someone who deposits a pair of assets into a pool so others can trade between them, earning a share of the trading fees generated by that pool.</dd></div>
+    <div class="gloss-item"><dt>Impermanent Loss</dt><dd>The gap that can open up between holding two assets in an LP pool versus simply holding them separately, caused by the pool automatically rebalancing as prices move.</dd></div>
+    <div class="gloss-item"><dt>Loan-to-Value (LTV)</dt><dd>The percentage of your collateral's value you're allowed to borrow against — a 70% LTV on a $10,000 position means you can borrow up to $7,000.</dd></div>
+    <div class="gloss-item"><dt>Collateralized Borrowing</dt><dd>Depositing an asset (like a stock token) into a lending protocol to borrow another asset (usually a stablecoin) against it, without selling the original asset.</dd></div>
+    <div class="gloss-item"><dt>Just-in-Time Liquidity</dt><dd>A minting model (used by Ondo Stocks) that taps real exchange liquidity at the moment of a trade instead of relying on a pre-funded token pool — dramatically reducing price slippage.</dd></div>
+    <div class="gloss-item"><dt>Chainlink Price Feed / Oracle</dt><dd>An on-chain data source that reports a token's real-world price so smart contracts can read it directly, without needing to trust a centralized source.</dd></div>
+    <div class="gloss-item"><dt>ERC-8056 / Scaled UI Amount</dt><dd>The standard Robinhood Chain uses to reflect stock splits and dividends via an on-chain multiplier, so a holder's raw token balance stays static while their true value updates automatically.</dd></div>
+    <div class="gloss-item"><dt>Tokenized Securities Venue (TSV)</dt><dd>A venue category created by the SEC's September 2026 Innovation Exemption in the United States — a permissioned venue allowed to trade tokenized versions of real listed stocks via AMM liquidity pools without registering as a full securities exchange. One region's version of the access frameworks now emerging worldwide.</dd></div>
+  </dl>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz">
+  <span class="section-tag">Check Your Understanding</span>
+  <h2 class="section-title">Quick Quiz</h2>
+  <div id="quizContainer"></div>
+  <div class="quiz-score" id="quizScore"></div>
+</section>
+
+<div class="cta-footer">
+  <h2 style="font-size:2.2rem;">This Is Just The Liquidity Layer</h2>
+  <p style="max-width:640px; margin:10px auto 0;">Next up: choosing pools, managing ranges, and reading the risk of any tokenized stock platform before you commit capital.</p>
+  <div class="badge-row">
+    <span class="badge">Block Wall Street</span>
+    <span class="badge">FinFlix</span>
+    <span class="badge">Building 4 Our Future</span>
+  </div>
+</div>
+
+<footer class="disclaimer">
+  Educational content only — not financial, investment, tax, or legal advice. Tokenized stocks, LP positions, and on-chain collateralized loans all carry real risk, including impermanent loss, smart contract risk, liquidation risk, de-peg risk, and issuer/counterparty risk. What's available to you depends on your region and each platform's current terms — always check before deploying capital.
+</footer>
+
+<script>
+  const capInput = document.getElementById('capInput');
+  const appInput = document.getElementById('appInput');
+  const feeInput = document.getElementById('feeInput');
+  const ilInput = document.getElementById('ilInput');
+  const capVal = document.getElementById('capVal');
+  const appVal = document.getElementById('appVal');
+  const feeVal = document.getElementById('feeVal');
+  const ilVal = document.getElementById('ilVal');
+  const holdResult = document.getElementById('holdResult');
+  const lpResult = document.getElementById('lpResult');
+  const deltaResult = document.getElementById('deltaResult');
+  function fmt(n){ return '$' + Math.round(n).toLocaleString('en-US'); }
+  function calc(){
+    const cap = parseFloat(capInput.value);
+    const app = parseFloat(appInput.value)/100;
+    const fee = parseFloat(feeInput.value)/100;
+    const il = parseFloat(ilInput.value)/100;
+    capVal.textContent = fmt(cap);
+    appVal.textContent = (app*100).toFixed(0) + '%';
+    feeVal.textContent = (fee*100).toFixed(0) + '%';
+    ilVal.textContent = (il*100).toFixed(0) + '%';
+    const holdEnd = cap * (1+app);
+    const lpEnd = (cap * (1+app) * (1-il)) + (cap * fee);
+    holdResult.textContent = fmt(holdEnd);
+    lpResult.textContent = fmt(lpEnd);
+    const diff = lpEnd - holdEnd;
+    deltaResult.textContent = (diff >= 0 ? '+' : '') + fmt(diff) + ' vs buy & hold';
+    deltaResult.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+  [capInput, appInput, feeInput, ilInput].forEach(el => el.addEventListener('input', calc));
+  calc();
+
+  const questions = [
+    { q: "What's the main structural advantage a stock LP position has over simply buying and holding the same tokenized stock?", opts: ["It removes all price risk", "It earns trading fee income on top of price exposure", "It guarantees a fixed return", "It pays a higher dividend"], correct: 1, explain: "LP positions keep the underlying price exposure and add fee income on top — the trade-off is exposure to impermanent loss." },
+    { q: "Why does the 'weekend edge' exist for tokenized stock pools?", opts: ["Tokenized pools have lower fees on weekends", "The underlying stock market is closed but on-chain pools keep trading", "Weekend prices are guaranteed to rise", "Gas fees are free on weekends"], correct: 1, explain: "Traditional markets are closed roughly 135 of the week's 168 hours. Tokenized pools remain open and can keep earning fees through that entire window." },
+    { q: "What do Ripe Finance, Kamino, and Morpho's Coinbase stock-token markets all let you do?", opts: ["Buy pre-IPO stock tokens", "Borrow against tokenized stock collateral without selling it", "Guarantee your LP position against impermanent loss", "Trade stocks during U.S. market hours only"], correct: 1, explain: "All three are collateralized lending venues — Ripe on Robinhood Chain, Kamino on Solana, Morpho on Base — that let you borrow stablecoins against tokenized stock holdings." },
+    { q: "What risk is unique to LP positions and doesn't apply to simply holding a tokenized stock?", opts: ["Impermanent loss", "Price going to zero", "Company bankruptcy", "Dividend cancellation"], correct: 0, explain: "Impermanent loss comes specifically from how paired assets in a pool rebalance relative to each other — it doesn't apply to a simple buy-and-hold position." },
+    { q: "What made Ondo Stocks' liquidity model different from many competitors?", opts: ["It only works on weekends", "A 'just-in-time' model that taps real exchange liquidity instead of a pre-funded pool", "It requires no KYC anywhere", "It only tokenizes cryptocurrencies"], correct: 1, explain: "Ondo's just-in-time liquidity model mints/redeems against real Nasdaq/NYSE liquidity at the moment of the trade, which is what drove its execution costs down so sharply." },
+    { q: "On Ripe Finance, what happens to your Robinhood Stock Token's price exposure after you borrow GREEN against it?", opts: ["It's sold to fund the loan", "It's locked and stops tracking price", "It's unaffected — you keep full price exposure", "It's converted to WETH"], correct: 2, explain: "Ripe's model is collateralized borrowing, not a sale — the deposited stock token keeps its full price exposure while the loan sits against it." },
+    { q: "What is impermanent loss most directly compensation for?", opts: ["Taking on gas fees", "The risk of paired assets in a pool drifting apart in price", "Holding a stablecoin", "Owning a pre-IPO company"], correct: 1, explain: "Fee income is the LP's compensation for accepting the risk that a pool's two assets diverge in price relative to simply holding them separately." },
+    { q: "What did the SEC's September 17, 2026 Innovation Exemption actually create?", opts: ["Permanent approval for every tokenized-stock platform worldwide to serve U.S. users", "A temporary, five-year category of U.S. venues (TSVs) allowed to trade tokenized stocks via permissioned AMM pools", "A ban on tokenized stocks in the United States", "A requirement that all tokenized stocks be synthetic, price-only products"], correct: 1, explain: "The order is a temporary, conditional five-year exemption creating the TSV category — one region's step in a broader, ongoing global expansion of access, not a single blanket approval." },
+    { q: "On Kamino, why does the xStocks Market run as an isolated market rather than inside Kamino's core lending pools?", opts: ["To charge higher fees", "So tokenized-stock collateral risk can't spill over into Kamino's broader crypto deposits", "Because xStocks aren't real assets", "To avoid using Chainlink price feeds"], correct: 1, explain: "Isolating the xStocks Market walls off the risk of equity-style volatility and trading-hours gaps from Kamino's much larger core lending book." },
+    { q: "What happened to borrowing volume in Morpho's Coinbase stock-token markets on September 16, 2026?", opts: ["It fell to zero as the markets were paused", "It jumped from about $500 to roughly $42,000 in about two hours as usage picked up", "It moved entirely into the fixed-rate Midnight layer", "It was capped by Coinbase at $10,000"], correct: 1, explain: "Borrowing had stayed under $600 for most of the first week after launch, then spiked sharply on September 16 as real usage kicked in — a live example of how fast a brand-new DeFi market can go from empty to active." }
+  ];
+  const container = document.getElementById('quizContainer');
+  let score = 0; let answered = 0;
+  questions.forEach((item, qi) => {
+    const qDiv = document.createElement('div'); qDiv.className = 'quiz-q';
+    const qText = document.createElement('p'); qText.className = 'qtext'; qText.textContent = (qi+1) + '. ' + item.q;
+    qDiv.appendChild(qText);
+    const optsDiv = document.createElement('div'); optsDiv.className = 'quiz-opts';
+    const explainDiv = document.createElement('div'); explainDiv.className = 'quiz-explain'; explainDiv.textContent = item.explain;
+    item.opts.forEach((opt, oi) => {
+      const btn = document.createElement('button'); btn.className = 'quiz-opt'; btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (btn.dataset.locked) return;
+        Array.from(optsDiv.children).forEach(b => b.dataset.locked = "1");
+        if (oi === item.correct) { btn.classList.add('correct'); score++; }
+        else { btn.classList.add('wrong'); optsDiv.children[item.correct].classList.add('correct'); }
+        explainDiv.style.display = 'block'; answered++; updateScore();
+      });
+      optsDiv.appendChild(btn);
+    });
+    qDiv.appendChild(optsDiv); qDiv.appendChild(explainDiv); container.appendChild(qDiv);
+  });
+  function updateScore(){
+    const scoreEl = document.getElementById('quizScore');
+    scoreEl.textContent = (answered === questions.length) ? `You scored ${score} / ${questions.length}` : `${answered} / ${questions.length} answered`;
+  }
+  updateScore();
+
+  const navLinks = document.querySelectorAll('.navlinks a');
+  const sections = document.querySelectorAll('section[id]');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(sec => { if (window.scrollY >= sec.offsetTop - 100) current = sec.id; });
+    navLinks.forEach(link => { link.classList.toggle('active', link.getAttribute('href') === '#' + current); });
+  });
+</script>
+
+</body>
+</html>
